@@ -11,8 +11,17 @@ const fadeIn = keyframes({
   to: { opacity: 1 }
 })
 
+const zoom = keyframes({
+  from: { opacity: 0, transform: `translateZ(${0}px) scale(0.5)` },
+  '10%': { opacity: 1 },
+  '90%': { opacity: 1 },
+  to: { opacity: 0, transform: `translateZ(${-400}px) scale(2)` }
+})
+
 const Body = styled.div(
   {
+    opacity: 0,
+    animation: `${fadeIn} 1.8s 0.2s ease-in forwards`,
     background: 'radial-gradient(circle at 50% 120%, #1a2532 15%, #090a0f 60%, #090a0f)',
     position: 'fixed',
     top: 0,
@@ -39,7 +48,7 @@ const StarLayer = styled.svg(
 const StarH1 = styled.h1(
   {
     opacity: 0,
-    animation: `${fadeIn} 0.8s 1s ease-in forwards`,
+    animation: `${fadeIn} 0.8s 0.5s ease-in forwards`,
     background: '-webkit-linear-gradient(#1a2532, #fff)',
     '-webkit-background-clip': 'text',
     '-webkit-text-fill-color': 'transparent',
@@ -56,14 +65,15 @@ const StarH1 = styled.h1(
 const repeatMap = zip([-1000, 0, 1000], [-1000, 0, 1000])
 const StarField = ({ stars, data, scaleF = () => {} }) => {
   return chunk(data, stars)
-    .map((layer, i) => (
+    .map((layer, i, layers) => (
       <StarLayer
         id={`layer-${scaleF(i + 1)}`}
         viewBox='0 0 1000 1000'
         css={{
           opacity: 0,
-          animation: `${fadeIn} 0.8s ${(i + 1) / 3}s ease-in forwards`,
-          transform: `translateZ(${-i * 100}px)`
+          animation: `${zoom} 4s ease-in infinite`,
+          animationDelay: `${i * (4 / layers.length)}s`,
+          transformOrigin: '50% 30%'
         }}
         key={i}
       >
@@ -78,7 +88,7 @@ const StarField = ({ stars, data, scaleF = () => {} }) => {
             <Star
               fill='url("#star")'
               key={i + j + k}
-              r={scaleF(1.5 * (i + 1))}
+              r={2}
               cx={x + ox}
               cy={y + oy}
             />
@@ -110,6 +120,7 @@ const Home = ({ data, stars }) => {
         <title>Stars</title>
         <link href='https://fonts.googleapis.com/css2?family=Monoton&display=swap' rel='stylesheet' />
         <link rel='icon' href='/favicon.ico' />
+        <style>{'body { background-color: #090a0f; }'}</style>
       </Head>
 
       <StarH1>STARS</StarH1>
@@ -126,8 +137,8 @@ const Home = ({ data, stars }) => {
 export default Home
 
 export async function getStaticProps (ctx) {
-  const layers = 8
-  const stars = 100
+  const layers = 12
+  const stars = 50
 
   const pre = new Date()
   const data = Array(layers * stars)
