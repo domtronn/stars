@@ -137,8 +137,8 @@ const Home = ({ data, stars }) => {
 export default Home
 
 export async function getStaticProps (ctx) {
-  const layers = 12
-  const stars = 50
+  const layers = 6
+  const stars = 200
 
   const pre = new Date()
   const data = Array(layers * stars)
