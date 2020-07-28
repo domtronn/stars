@@ -1,10 +1,15 @@
 /** @jsx jsx */
 import Head from 'next/head'
 import styled from '@emotion/styled'
-import { jsx } from '@emotion/core'
+import { jsx, keyframes } from '@emotion/core'
 
 import { useRef, useEffect } from 'react'
 import { chunk, zip } from '../utils/arr'
+
+const fadeIn = keyframes({
+  from: { opacity: 0 },
+  to: { opacity: 1 }
+})
 
 const Body = styled.div(
   {
@@ -33,6 +38,8 @@ const StarLayer = styled.svg(
 
 const StarH1 = styled.h1(
   {
+    opacity: 0,
+    animation: `${fadeIn} 0.8s 1s ease-in forwards`,
     background: '-webkit-linear-gradient(#1a2532, #fff)',
     '-webkit-background-clip': 'text',
     '-webkit-text-fill-color': 'transparent',
@@ -54,6 +61,8 @@ const StarField = ({ stars, data, scaleF = () => {} }) => {
         id={`layer-${scaleF(i + 1)}`}
         viewBox='0 0 1000 1000'
         css={{
+          opacity: 0,
+          animation: `${fadeIn} 0.8s ${(i + 1) / 3}s ease-in forwards`,
           transform: `translateZ(${-i * 100}px)`
         }}
         key={i}
@@ -61,7 +70,6 @@ const StarField = ({ stars, data, scaleF = () => {} }) => {
         <defs>
           <radialGradient id='star' cx='50%' cy='50%' r='50%'>
             <stop stop-color='#fff' offset='0%' />
-            <stop stop-color='#1a2532' offset='50%' />
             <stop stop-color='transparent' offset='100%' />
           </radialGradient>
         </defs>
@@ -70,7 +78,7 @@ const StarField = ({ stars, data, scaleF = () => {} }) => {
             <Star
               fill='url("#star")'
               key={i + j + k}
-              r={scaleF((i + 1) * 2)}
+              r={scaleF(1.5 * (i + 1))}
               cx={x + ox}
               cy={y + oy}
             />
