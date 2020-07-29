@@ -13,6 +13,11 @@ const fadeIn = keyframes({
   to: { opacity: 1 }
 })
 
+const fadeOut = keyframes({
+  from: { opacity: 1 },
+  to: { opacity: 0 }
+})
+
 const zoom = keyframes({
   from: { opacity: 0, transform: `translateZ(${0}px) scale(0.5)` },
   '30%': { opacity: 1 },
@@ -38,7 +43,7 @@ const Button = styled.button(
     borderRadius: '50%',
     width: 52,
     height: 52,
-    padding: 8,
+    padding: 8
   },
   ({ active }) => ({
     svg: { stroke: active ? '#c6c8cb' : '#81878e' },
@@ -91,8 +96,8 @@ const StarH1 = styled.h1(
     opacity: 0,
     animation: `${fadeIn} 0.8s 0.5s ease-in forwards`,
     background: '-webkit-linear-gradient(#1a2532, #fff)',
-    '-webkit-background-clip': 'text',
-    '-webkit-text-fill-color': 'transparent',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
     transform: 'translateZ(-100px)',
     textAlign: 'center',
     margin: '20% auto 0',
@@ -104,46 +109,59 @@ const StarH1 = styled.h1(
 )
 
 const repeatMap = zip([-1000, 0, 1000], [-1000, 0, 1000])
-const StarField = ({ stars, data, speed, animate = true, scaleF = () => {} }) => {
-  return chunk(data, stars)
-    .map((layer, i, layers) => (
-      <StarLayer
-        id={`layer-${scaleF(i + 1)}`}
-        viewBox='0 0 1000 1000'
-        css={{
-          opacity: animate ? 0 : 1,
-          animation: animate ? `${zoom} ${speed}s ease-in infinite` : '',
-          animationDelay: `${i * (speed / layers.length)}s`,
-          transform: animate ? null : `translateZ(-${(i + 1) * 100}px)`,
-          transformOrigin: '50% 30%'
-        }}
-        key={i}
-      >
-        <defs>
-          <radialGradient id='star' cx='50%' cy='50%' r='50%'>
-            <stop stop-color='#fff' offset='0%' />
-            <stop stop-color='transparent' offset='100%' />
-          </radialGradient>
-        </defs>
-        {layer.map(([x, y, r], j) => (
-          repeatMap.map(([ox, oy], k) => (
-            <Star
-              fill='url("#star")'
-              key={i + j + k}
-              r={scaleF(r)}
-              cx={x + ox}
-              cy={y + oy}
-            />
-          ))
-        ))}
-      </StarLayer>
-    ))
-}
+const StarField = ({ stars, data, speed, className, animate = true, scaleF = () => {} }) => (
+  <div className={className}>
+    {
+      chunk(data, stars)
+        .map((layer, i, layers) => (
+          <StarLayer
+            id={`layer-${scaleF(i + 1)}`}
+            viewBox='0 0 1000 1000'
+            css={{
+              opacity: animate ? 0 : 1,
+              animation: animate ? `${zoom} ${speed}s ease-in infinite` : '',
+              animationDelay: `${i * (speed / layers.length)}s`,
+              transform: animate ? null : `translateZ(-${(i + 1) * 100}px)`,
+              transformOrigin: '50% 30%'
+            }}
+            key={i}
+          >
+            <defs>
+              <radialGradient id='star' cx='50%' cy='50%' r='50%'>
+                <stop stopColor='#fff' offset='0%' />
+                <stop stopColor='transparent' offset='100%' />
+              </radialGradient>
+            </defs>
+            {layer.map(([x, y, r], j) => (
+              repeatMap.map(([ox, oy], k) => (
+                <Star
+                  fill='url("#star")'
+                  key={i + j + k}
+                  r={scaleF(r)}
+                  cx={x + ox}
+                  cy={y + oy}
+                />
+              ))
+            ))}
+          </StarLayer>
+        ))
+    }
+  </div>
+)
 
 const Home = ({ data, stars }) => {
   const body = useRef(null)
+  const [fade, setFade] = useState('in')
   const [animate, setAnimate] = useState(true)
   const [speed, setSpeed] = useState(8)
+
+  const setTransition = (cb) => () => {
+    setFade('out')
+    setTimeout(() => {
+      setFade('in')
+      cb()
+    }, 500)
+  }
 
   useEffect(() => {
     document.addEventListener('mousemove', e => {
@@ -171,6 +189,11 @@ const Home = ({ data, stars }) => {
       <br />
 
       <StarField
+        css={{
+          animation: fade === 'in'
+            ? `${fadeIn} 500ms ease-in`
+            : `${fadeOut} 500ms ease-out`
+        }}
         data={data}
         stars={stars}
         speed={speed}
@@ -181,25 +204,27 @@ const Home = ({ data, stars }) => {
       <ButtonContainer>
         <Button
           active={!animate}
-          onClick={() => setAnimate(false)}
+          onClick={setTransition(() => {
+            setAnimate(false)
+          })}
         >
           <FiPause />
         </Button>
         <Button
           active={animate && speed === 8}
-          onClick={() => {
+          onClick={setTransition(() => {
             setAnimate(true)
             setSpeed(8)
-          }}
+          })}
         >
           <FiPlay />
         </Button>
         <Button
           active={animate && speed === 4}
-          onClick={() => {
+          onClick={setTransition(() => {
             setAnimate(true)
             setSpeed(4)
-          }}
+          })}
         >
           <FiFastForward />
         </Button>
