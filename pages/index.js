@@ -3,10 +3,12 @@ import Head from 'next/head'
 import styled from '@emotion/styled'
 import { jsx, keyframes } from '@emotion/core'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, forwardRef } from 'react'
 import { chunk, zip } from '../utils/arr'
 
 import { FiPause, FiPlay, FiFastForward } from 'react-icons/fi'
+
+const mq = [768, 990].map(bp => `@media (min-width: ${bp}px)`)
 
 const fadeIn = keyframes({
   from: { opacity: 0 },
@@ -62,8 +64,7 @@ const Body = styled.div(
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    perspective: 5000
+    bottom: 0
   }
 )
 
@@ -101,7 +102,9 @@ const StarH1 = styled.h1(
     transform: 'translateZ(-100px)',
     textAlign: 'center',
     margin: '20% auto 0',
-    fontSize: 96,
+    fontSize: 54,
+    [mq[1]]: { fontSize: 54 },
+    [mq[0]]: { fontSize: 96 },
     fontWeight: 100,
     fontFamily: `'Monoton', cursive;`,
     color: 'white'
@@ -109,8 +112,14 @@ const StarH1 = styled.h1(
 )
 
 const repeatMap = zip([-1000, 0, 1000], [-1000, 0, 1000])
-const StarField = ({ stars, data, speed, className, animate = true, scaleF = () => {} }) => (
-  <div className={className}>
+const StarField = forwardRef((
+  { stars, data, speed, className, animate = true, scaleF = () => {} },
+  ref
+) => (
+  <div
+    className={className}
+    ref={ref}
+  >
     {
       chunk(data, stars)
         .map((layer, i, layers) => (
@@ -122,7 +131,7 @@ const StarField = ({ stars, data, speed, className, animate = true, scaleF = () 
               animation: animate ? `${zoom} ${speed}s ease-in infinite` : '',
               animationDelay: `${i * (speed / layers.length)}s`,
               transform: animate ? null : `translateZ(-${(i + 1) * 100}px)`,
-              transformOrigin: '50% 30%'
+              transformOrigin: '50% 0%'
             }}
             key={i}
           >
@@ -147,7 +156,7 @@ const StarField = ({ stars, data, speed, className, animate = true, scaleF = () 
         ))
     }
   </div>
-)
+))
 
 const Home = ({ data, stars }) => {
   const body = useRef(null)
@@ -175,9 +184,7 @@ const Home = ({ data, stars }) => {
   }, [])
 
   return (
-    <Body
-      ref={body}
-    >
+    <Body>
       <Head>
         <title>Stars</title>
         <link href='https://fonts.googleapis.com/css2?family=Monoton&display=swap' rel='stylesheet' />
@@ -189,7 +196,9 @@ const Home = ({ data, stars }) => {
       <br />
 
       <StarField
+        ref={body}
         css={{
+          perspective: 5000,
           animation: fade === 'in'
             ? `${fadeIn} 500ms ease-in`
             : `${fadeOut} 500ms ease-out`
