@@ -126,7 +126,7 @@ const StarField = forwardRef((
             id={`layer-${scaleF(i + 1)}`}
             viewBox='0 0 1000 1000'
             css={{
-              overflow: 'hidden',
+              overflow: 'visible',
 
               opacity: animate ? 0 : 1,
               animation: animate ? `${zoom} ${speed}s ease-in infinite` : '',
@@ -264,7 +264,7 @@ export async function getStaticProps (ctx) {
   const data = Array(layers * stars)
     .fill()
         .map(_ => {
-          const r = minr + (Math.random() * (500 - minr))
+          const r = minr + (Math.random() * (750 - minr))
           const theta = 2 * Math.PI * Math.random()
 
           return [
