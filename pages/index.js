@@ -24,7 +24,7 @@ const zoom = keyframes({
   from: { opacity: 0, transform: `translateZ(${0}px) scale(0.5)` },
   '30%': { opacity: 1 },
   '80%': { opacity: 1 },
-  to: { opacity: 0, transform: `translateZ(${-400}px) scale(2)` }
+  to: { opacity: 0, transform: `translateZ(${-800}px) scale(4)` }
 })
 
 const Button = styled.button(
@@ -71,7 +71,6 @@ const Body = styled.div(
 const Star = styled.circle()
 const StarLayer = styled.svg(
   {
-    overflow: 'visible',
     position: 'absolute',
     top: 0,
     left: 0,
@@ -127,26 +126,29 @@ const StarField = forwardRef((
             id={`layer-${scaleF(i + 1)}`}
             viewBox='0 0 1000 1000'
             css={{
+              overflow: 'hidden',
+
               opacity: animate ? 0 : 1,
               animation: animate ? `${zoom} ${speed}s ease-in infinite` : '',
               animationDelay: `${i * (speed / layers.length)}s`,
               transform: animate ? null : `translateZ(-${(i + 1) * 100}px)`,
-              transformOrigin: '50% 0%'
+              transformOrigin: '50% 50%'
             }}
             key={i}
           >
             <defs>
-              <radialGradient id='star' cx='50%' cy='50%' r='50%'>
+              <radialGradient id={`star-${i}`} cx='50%' cy='50%' r='50%'>
                 <stop stopColor='#fff' offset='0%' />
                 <stop stopColor='transparent' offset='100%' />
               </radialGradient>
             </defs>
+
             {layer.map(([x, y, r], j) => (
               repeatMap.map(([ox, oy], k) => (
                 <Star
-                  fill='url("#star")'
+                  fill={`url("#star-${i}")`}
                   key={i + j + k}
-                  r={scaleF(r)}
+                  r={scaleF(i)}
                   cx={x + ox}
                   cy={y + oy}
                 />
@@ -198,6 +200,14 @@ const Home = ({ data, stars }) => {
       <StarField
         ref={body}
         css={{
+          position: 'absolute',
+          top: 0,
+          width: '100%',
+          height: '100%',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           perspective: 5000,
           animation: fade === 'in'
             ? `${fadeIn} 500ms ease-in`
@@ -207,7 +217,7 @@ const Home = ({ data, stars }) => {
         stars={stars}
         speed={speed}
         animate={animate}
-        scaleF={animate ? _ => 2 : i => i * 1.5}
+        scaleF={animate ? _ => 2 : i => i}
       />
 
       <ButtonContainer>
@@ -229,10 +239,10 @@ const Home = ({ data, stars }) => {
           <FiPlay />
         </Button>
         <Button
-          active={animate && speed === 4}
+          active={animate && speed !== 8}
           onClick={setTransition(() => {
             setAnimate(true)
-            setSpeed(4)
+            setSpeed(2)
           })}
         >
           <FiFastForward />
@@ -247,18 +257,25 @@ export default Home
 
 export async function getStaticProps (ctx) {
   const layers = 6
-  const stars = 100
+  const stars = 120
+  const minr = 100
 
   const pre = new Date()
   const data = Array(layers * stars)
     .fill()
-    .map(_ => [
-      Math.round(Math.random() * 1000),
-      Math.round(Math.random() * 1000),
-      0.75 + Math.random() * 0.5
-    ])
+        .map(_ => {
+          const r = minr + (Math.random() * (500 - minr))
+          const theta = 2 * Math.PI * Math.random()
+
+          return [
+            (r * Math.cos(theta)) + 500,
+            (r * Math.sin(theta)) + 500,
+            1
+          ]
+        })
 
   console.log(`Data gen took: ${new Date() - pre}ms`)
+  console.log(JSON.stringify(data))
 
   return { props: { data, stars } }
 }
