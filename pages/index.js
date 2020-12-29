@@ -6,7 +6,7 @@ import { jsx, keyframes } from '@emotion/core'
 import { useRef, useState, useEffect, forwardRef } from 'react'
 import { chunk, zip } from '../utils/arr'
 
-import { FiPause, FiPlay, FiFastForward } from 'react-icons/fi'
+import { FiPause, FiPlay, FiFastForward, FiLock, FiUnlock } from 'react-icons/fi'
 
 /** ----- Config start */
 const mq = [768, 990].map(bp => `@media (min-width: ${bp}px)`)
@@ -52,11 +52,17 @@ const Button = styled.button(
     background: 'none',
     border: '2px solid #81878e',
     borderRadius: '50%',
-    width: 52,
-    height: 52,
-    padding: 8
   },
-  ({ active }) => ({
+  ({ active, size }) => ({
+    width: size === 'sm' ? 32 : 52,
+    height: size === 'sm' ? 32 : 52,
+    padding: size === 'sm' ? 4 : 8,
+    svg: {
+      top: size === 'sm' ? -8 : -9,
+      left: size === 'sm' ? -8 : -9,
+      width: size === 'sm' ? 44 : 66,
+      height: size === 'sm' ? 44 : 66,
+    },
     ':hover': {
       svg: { fill: active ? 'transparent' : 'white' },
       borderColor: active ? 'white' : 'transparent'
@@ -69,10 +75,6 @@ const Button = styled.button(
 const Spinner = ({ fill, stroke, ...rest }) => (
   <svg
     css={{
-      top: -9,
-      left: -9,
-      width: 66,
-      height: 66,
       position: 'absolute',
       stroke: 'none',
       fill: 'rgba(0,0,0,0)'
@@ -142,12 +144,25 @@ const StarLayer = styled.svg(
 
 const ButtonContainer = styled.div(
   {
+    opacity: 0,
+    animation: `${fadeIn} 0.8s 1s ease-in forwards`,
     transform: 'translateZ(-50px)',
     zIndex: 20,
     display: 'flex',
     justifyContent: 'space-between',
     width: 240,
     margin: '0 auto'
+  }
+)
+
+const Footer = styled.div(
+  {
+    opacity: 0,
+    animation: `${fadeIn} 0.8s 1.5s ease-in forwards`,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    position: 'absolute',
+    bottom: 16
   }
 )
 
@@ -227,6 +242,8 @@ const Home = ({ data, stars }) => {
   const [animate, setAnimate] = useState(true)
   const [speed, setSpeed] = useState(8)
 
+  const [locked, setLocked] = useState(false)
+
   const setTransition = (cb) => () => {
     setFade('out')
     setTimeout(() => {
@@ -255,7 +272,8 @@ const Home = ({ data, stars }) => {
         <style>{'body { background-color: #090a0f; }'}</style>
       </Head>
 
-      <StarH1>STARS</StarH1>
+
+      {!locked && <StarH1>STARS</StarH1>}
       <br />
 
       <StarField
@@ -281,38 +299,54 @@ const Home = ({ data, stars }) => {
         scaleF={animate ? _ => 2 : i => i}
       />
 
-      <ButtonContainer>
-        <Button
-          active={!animate}
-          onClick={setTransition(() => {
-            setAnimate(false)
-          })}
-        >
-          <Spinner />
-          <FiPause />
-        </Button>
-        <Button
-          active={animate && speed === 8}
-          onClick={setTransition(() => {
-            setAnimate(true)
-            setSpeed(8)
-          })}
-        >
-          <Spinner />
-          <FiPlay />
-        </Button>
-        <Button
-          active={animate && speed !== 8}
-          onClick={setTransition(() => {
-            setAnimate(true)
-            setSpeed(2)
-          })}
-        >
-          <Spinner />
-          <FiFastForward />
-        </Button>
-      </ButtonContainer>
+      {!locked && (
+        <ButtonContainer>
+          <Button
+            active={!animate}
+            onClick={setTransition(() => {
+              setAnimate(false)
+            })}
+          >
+            <Spinner />
+            <FiPause />
+          </Button>
+          <Button
+            active={animate && speed === 8}
+            onClick={setTransition(() => {
+              setAnimate(true)
+              setSpeed(8)
+            })}
+          >
+            <Spinner />
+            <FiPlay />
+          </Button>
+          <Button
+            active={animate && speed !== 8}
+            onClick={setTransition(() => {
+              setAnimate(true)
+              setSpeed(2)
+            })}
+          >
+            <Spinner />
+            <FiFastForward />
+          </Button>
+        </ButtonContainer>
+      )}
 
+      <Footer>
+        <Button
+          size='sm'
+          active={locked}
+          onClick={_ => setLocked(!locked)}
+        >
+          <Spinner />
+          {
+            locked
+              ? <FiLock />
+              : <FiUnlock />
+          }
+        </Button>
+      </Footer>
     </Body>
   )
 }
